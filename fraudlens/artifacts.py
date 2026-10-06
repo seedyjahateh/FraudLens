@@ -86,9 +86,14 @@ def _json_default(obj: Any) -> Any:
     raise TypeError(f"not JSON serialisable: {type(obj)}")
 
 
-def write_json(path: Path, payload: Any) -> None:
+def write_json(path: Path, payload: Any, compact: bool = False) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(payload, indent=2, default=_json_default) + "\n", encoding="utf-8")
+    text = (
+        json.dumps(payload, separators=(",", ":"), default=_json_default)
+        if compact
+        else json.dumps(payload, indent=2, default=_json_default)
+    )
+    path.write_text(text + "\n", encoding="utf-8", newline="\n")
 
 
 def read_json(path: Path) -> Any:

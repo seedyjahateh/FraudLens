@@ -19,12 +19,13 @@ from pathlib import Path
 import httpx
 import numpy as np
 
+from fraudlens.artifacts import SELECTED, write_json
 from fraudlens.config import load_config
 from fraudlens.data import FEATURE_COLUMNS, Split, file_sha256, load_transactions
 from fraudlens.report import update_readme
 
 FIXTURE = Path("tests/fixtures/creditcard_sample.csv")
-EXAMPLE = Path(__file__).with_name("example_transaction.json")
+EXAMPLE = Path(__file__).resolve().parents[1] / "service" / "presets" / "example_transaction.json"
 
 
 def sample_transactions(config: Path, n: int, seed: int) -> tuple[list[dict[str, float]], str]:
@@ -64,9 +65,7 @@ def main() -> None:
         example = json.loads(EXAMPLE.read_text(encoding="utf-8"))
         response = client.post("/score", json=example, headers={"x-request-id": "example"})
         response.raise_for_status()
-        (args.out.parent / "example_response.json").write_text(
-            json.dumps(response.json(), indent=2) + "\n", encoding="utf-8"
-        )
+        write_json(args.out.parent / "example_response.json", response.json())
         for i, payload in enumerate(payloads):
             start = time.perf_counter()
             resp = client.post("/score", json=payload)
@@ -98,10 +97,14 @@ def main() -> None:
         "measured_at": datetime.now(UTC).strftime("%Y-%m-%d"),
     }
     args.out.parent.mkdir(parents=True, exist_ok=True)
-    args.out.write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
+    write_json(args.out, result)
     print(json.dumps(result, indent=2))
+    cfg = load_config(args.config)
+    # Also keep it next to the served model, where the API's /api/dashboard picks it up.
+    model_dir = cfg.artifacts_dir / SELECTED / str(model["model_version"])
+    if model_dir.is_dir():
+        write_json(model_dir / "load_test.json", result)
     if not args.no_readme:
-        cfg = load_config(args.config)
         update_readme(cfg.readme_path, args.out.parent)
 
 

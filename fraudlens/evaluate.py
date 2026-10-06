@@ -32,6 +32,7 @@ from fraudlens.artifacts import (
 )
 from fraudlens.config import Config, EvaluationConfig, load_config
 from fraudlens.costs import baseline_costs, cost_at_threshold, cost_curve, savings
+from fraudlens.dashboard_data import build_bundle
 from fraudlens.data import Split, file_sha256, load_transactions, xy
 from fraudlens.explain import global_importance
 from fraudlens.models import MODEL_NAMES, SUPERVISED, fraud_scores
@@ -289,6 +290,25 @@ def evaluate(cfg: Config, version: str | None = None) -> dict[str, Any]:
         "test_rows": len(y_te),
     }
     write_json(selected_dir / "evaluation.json", evaluation)
+
+    bundle = build_bundle(
+        cfg=cfg,
+        summary=summary,
+        evaluation=evaluation,
+        metrics=metrics,
+        comparisons=comparisons_df,
+        importance=importance,
+        cost_summary=cost_summary,
+        served_label=served_label,
+        y_val=y_va,
+        amounts_val=amounts_va,
+        val_scores=val_scores,
+        y_test=y_te,
+        amounts_test=amounts_te,
+        test_scores={k: v[0] for k, v in test_scored.items()},
+    )
+    write_json(reports / "dashboard.json", bundle, compact=True)
+    write_json(selected_dir / "dashboard.json", bundle, compact=True)
 
     context = report.ReportContext(
         cfg=cfg,

@@ -85,6 +85,29 @@ class HealthResponse(BaseModel):
     model_version: str
 
 
+class PresetsResponse(BaseModel):
+    typical: Transaction = Field(description="Training median of every input")
+    suspicious: Transaction = Field(description="Hand-made transaction, not from the dataset")
+
+
+class StatsResponse(BaseModel):
+    """Rolling statistics over the most recent ``/score`` calls served by this process."""
+
+    started_at: str
+    uptime_seconds: float
+    score_requests: int
+    rejected_requests: int
+    window: int
+    p50_ms: float | None
+    p95_ms: float | None
+    p99_ms: float | None
+    mean_ms: float | None
+    flag_rate: float | None
+    flagged: int
+    allowed: int
+    recent_ms: list[float]
+
+
 class ModelInfo(BaseModel):
     model_name: str
     model_version: str

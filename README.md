@@ -133,11 +133,11 @@ from the read-only `./artifacts` mount at startup. It never trains.
 | `GET /model` | Model name, version, training date, test PR-AUC with CI, threshold, data hash, code version |
 
 An illustrative transaction (hand-made, not a row from the dataset) is in
-[scripts/example_transaction.json](scripts/example_transaction.json):
+[service/presets/example_transaction.json](service/presets/example_transaction.json):
 
 ```bash
 curl -s localhost:8000/score -H 'content-type: application/json' \
-  -d @scripts/example_transaction.json
+  -d @service/presets/example_transaction.json
 ```
 
 <!-- EXAMPLE:START -->

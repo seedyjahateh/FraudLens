@@ -59,29 +59,55 @@ def cost_at_threshold(
     return CostOutcome(float(threshold), total, tp, fp, fn, tn)
 
 
-def cost_curve(
-    y: np.ndarray, scores: np.ndarray, amounts: np.ndarray, costs: CostConfig
-) -> tuple[np.ndarray, np.ndarray]:
-    """Total cost for every distinct threshold, from "flag nothing" to "flag everything".
+@dataclass(frozen=True)
+class Sweep:
+    """Confusion counts at every distinct threshold, thresholds in decreasing order.
 
-    Returns ``(thresholds, total_costs)`` with thresholds in decreasing order. The first
-    threshold lies just above the highest score (nothing flagged).
+    ``missed_cost`` is the cost of the frauds let through (per the ``missed_fraud`` rule),
+    so the total for any review costs is ``missed_cost + fp*false_alarm + tp*caught_fraud``.
     """
+
+    thresholds: np.ndarray
+    tp: np.ndarray
+    fp: np.ndarray
+    fn: np.ndarray
+    tn: np.ndarray
+    missed_cost: np.ndarray
+
+    def totals(self, costs: CostConfig) -> np.ndarray:
+        return self.missed_cost + self.fp * costs.false_alarm + self.tp * costs.caught_fraud
+
+
+def cost_sweep(y: np.ndarray, scores: np.ndarray, amounts: np.ndarray, costs: CostConfig) -> Sweep:
+    """Flag the top k rows for every valid k. The first threshold lies just above the
+    highest score (nothing flagged); ties in score are flagged together."""
     y = np.asarray(y)
     scores = np.asarray(scores, dtype=np.float64)
     order = np.argsort(-scores, kind="mergesort")
     s = scores[order]
-    ys = y[order]
-    missed = missed_costs(ys, np.asarray(amounts)[order], costs)
-    flag_cost = np.where(ys == 1, costs.caught_fraud, costs.false_alarm)
-    # Flagging the top k rows: pay review costs for them, save their missed-fraud cost.
-    delta = np.cumsum(flag_cost - missed)
-    base = float(missed.sum())
-    # Valid cut points are the ends of runs of equal scores (ties flag together).
+    fraud = (y[order] == 1).astype(np.int64)
+    missed = missed_costs(y[order], np.asarray(amounts)[order], costs)
     ends = np.flatnonzero(np.append(s[1:] != s[:-1], True))
-    thresholds = np.concatenate([[np.nextafter(s[0], np.inf)], s[ends]])
-    totals = np.concatenate([[base], base + delta[ends]])
-    return thresholds, totals
+    tp = np.concatenate([[0], np.cumsum(fraud)[ends]])
+    flagged = np.concatenate([[0], ends + 1])
+    fp = flagged - tp
+    n_fraud = int(fraud.sum())
+    return Sweep(
+        thresholds=np.concatenate([[np.nextafter(s[0], np.inf)], s[ends]]),
+        tp=tp,
+        fp=fp,
+        fn=n_fraud - tp,
+        tn=(len(s) - n_fraud) - fp,
+        missed_cost=float(missed.sum()) - np.concatenate([[0.0], np.cumsum(missed)[ends]]),
+    )
+
+
+def cost_curve(
+    y: np.ndarray, scores: np.ndarray, amounts: np.ndarray, costs: CostConfig
+) -> tuple[np.ndarray, np.ndarray]:
+    """Total cost for every distinct threshold, from "flag nothing" to "flag everything"."""
+    sweep = cost_sweep(y, scores, amounts, costs)
+    return sweep.thresholds, sweep.totals(costs)
 
 
 def choose_threshold(

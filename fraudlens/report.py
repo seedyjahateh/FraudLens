@@ -122,6 +122,14 @@ def decision_table(metrics: pd.DataFrame) -> str:
     )
 
 
+def better_unselected(comparisons: pd.DataFrame) -> list[str]:
+    """Models that scored significantly higher on test than the served model."""
+    if comparisons.empty:
+        return []
+    better = comparisons[comparisons["significant"].astype(bool) & (comparisons["ci_high"] < 0)]
+    return [str(m) for m in better["model_b"]]
+
+
 def significance_text(comparisons: pd.DataFrame) -> str:
     if comparisons.empty:
         return ""
@@ -139,9 +147,9 @@ def significance_text(comparisons: pd.DataFrame) -> str:
         f"Paired bootstrap of the PR-AUC difference, `{served}` minus each other model, on "
         "the same resampled test rows:\n\n" + "\n".join(lines) + "\n"
     )
-    better = comparisons[comparisons["significant"] & (comparisons["ci_high"] < 0)]
-    if not better.empty:
-        names = ", ".join(f"`{n}`" for n in better["model_b"])
+    better = better_unselected(comparisons)
+    if better:
+        names = ", ".join(f"`{n}`" for n in better)
         text += (
             f"\n**The model chosen on validation is not the best on test:** {names} scored "
             "significantly higher on the test slice. The served model is kept anyway: it was "
