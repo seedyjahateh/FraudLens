@@ -1,0 +1,10 @@
+model,strategy,validation_pr_auc
+logistic_regression,class_weight,0.761902
+logistic_regression,undersample,0.774005
+logistic_regression,smote,0.710523
+random_forest,class_weight,0.768731
+random_forest,undersample,0.761266
+random_forest,smote,0.754433
+hist_gradient_boosting,class_weight,0.790151
+hist_gradient_boosting,undersample,0.774793
+hist_gradient_boosting,smote,0.761358

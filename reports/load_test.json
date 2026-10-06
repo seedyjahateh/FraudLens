@@ -1,0 +1,17 @@
+{
+  "requests": 1000,
+  "warmup_requests": 50,
+  "target": "http://localhost:8000",
+  "environment": "Docker Desktop on Windows 11, 12th Gen Intel(R) Core(TM) i5-1245U, 16 GB RAM",
+  "payload_source": "test slice of the real dataset",
+  "model_version": "76274b69-635f5ce7",
+  "p50_ms": 15.747299992654007,
+  "p95_ms": 21.161900005245112,
+  "p99_ms": 27.346625013160516,
+  "mean_ms": 16.17648870027915,
+  "max_ms": 38.00539999792818,
+  "errors": 0,
+  "flagged": 0,
+  "budget_ms": 50.0,
+  "measured_at": "2026-10-06"
+}

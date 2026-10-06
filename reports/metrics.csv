@@ -1,0 +1,90 @@
+model,role,split,metric,value,ci_low,ci_high
+logistic_regression,candidate,validation,pr_auc,0.774005,,
+logistic_regression,candidate,validation,threshold,1,,
+logistic_regression,candidate,test,pr_auc,0.79753,0.708122,0.879361
+logistic_regression,candidate,test,recall_at_90pct_precision,0.76,0.602349,0.850014
+logistic_regression,candidate,test,precision_at_80pct_recall,0.594059,0.0931878,0.972638
+logistic_regression,candidate,test,roc_auc,0.983703,0.970584,0.995011
+logistic_regression,candidate,test,brier,0.00401494,0.00366638,0.0043396
+logistic_regression,candidate,test,accuracy,0.999544,0.99935,0.999702
+logistic_regression,candidate,test,precision_at_threshold,0.945455,0.877193,1
+logistic_regression,candidate,test,recall_at_threshold,0.693333,0.583302,0.79223
+logistic_regression,candidate,test,total_cost,3212.08,1041.05,6177.25
+logistic_regression,candidate,test,savings_vs_flag_nothing_pct,58.4426,26.5469,83.3819
+logistic_regression,candidate,test,savings_vs_flag_everything_pct,98.8722,97.8311,99.6345
+logistic_regression,candidate,test,tp,52,,
+logistic_regression,candidate,test,fp,3,,
+logistic_regression,candidate,test,fn,23,,
+logistic_regression,candidate,test,tn,56883,,
+random_forest,candidate,validation,pr_auc,0.768731,,
+random_forest,candidate,validation,threshold,0.375278,,
+random_forest,candidate,test,pr_auc,0.817848,0.736311,0.894447
+random_forest,candidate,test,recall_at_90pct_precision,0.76,0.646139,0.848523
+random_forest,candidate,test,precision_at_80pct_recall,0.631579,0.123724,0.986129
+random_forest,candidate,test,roc_auc,0.950411,0.91361,0.985082
+random_forest,candidate,test,brier,0.00041102,0.00028236,0.000557551
+random_forest,candidate,test,accuracy,0.999561,0.999385,0.999737
+random_forest,candidate,test,precision_at_threshold,0.890625,0.807661,0.965517
+random_forest,candidate,test,recall_at_threshold,0.76,0.662162,0.852481
+random_forest,candidate,test,total_cost,2958.27,810.938,5834.55
+random_forest,candidate,test,savings_vs_flag_nothing_pct,61.7263,29.45,87.3105
+random_forest,candidate,test,savings_vs_flag_everything_pct,98.9613,97.9514,99.7153
+random_forest,candidate,test,tp,57,,
+random_forest,candidate,test,fp,7,,
+random_forest,candidate,test,fn,18,,
+random_forest,candidate,test,tn,56879,,
+hist_gradient_boosting,candidate,validation,pr_auc,0.790151,,
+hist_gradient_boosting,candidate,validation,threshold,0.910946,,
+hist_gradient_boosting,candidate,test,pr_auc,0.787991,0.700231,0.869043
+hist_gradient_boosting,candidate,test,recall_at_90pct_precision,0.733333,0.51388,0.825
+hist_gradient_boosting,candidate,test,precision_at_80pct_recall,0.517241,0.121704,0.935534
+hist_gradient_boosting,candidate,test,roc_auc,0.973934,0.940041,0.993616
+hist_gradient_boosting,candidate,test,brier,0.000549901,0.000388714,0.000732954
+hist_gradient_boosting,candidate,test,accuracy,0.999508,0.999315,0.999684
+hist_gradient_boosting,candidate,test,precision_at_threshold,0.873016,0.785655,0.953846
+hist_gradient_boosting,candidate,test,recall_at_threshold,0.733333,0.625,0.829306
+hist_gradient_boosting,candidate,test,total_cost,3241.03,1088.42,6186.85
+hist_gradient_boosting,candidate,test,savings_vs_flag_nothing_pct,58.068,26.2295,82.855
+hist_gradient_boosting,candidate,test,savings_vs_flag_everything_pct,98.862,97.8277,99.6178
+hist_gradient_boosting,candidate,test,tp,55,,
+hist_gradient_boosting,candidate,test,fp,8,,
+hist_gradient_boosting,candidate,test,fn,20,,
+hist_gradient_boosting,candidate,test,tn,56878,,
+isolation_forest,candidate,validation,pr_auc,0.0412412,,
+isolation_forest,candidate,validation,threshold,0.533089,,
+isolation_forest,candidate,test,pr_auc,0.0775477,0.0555223,0.109463
+isolation_forest,candidate,test,recall_at_90pct_precision,0,0,0
+isolation_forest,candidate,test,precision_at_80pct_recall,0.0397351,0.0136979,0.0763386
+isolation_forest,candidate,test,roc_auc,0.95747,0.932668,0.977769
+isolation_forest,candidate,test,brier,0.137319,0.137112,0.137539
+isolation_forest,candidate,test,accuracy,0.993241,0.992538,0.993891
+isolation_forest,candidate,test,precision_at_threshold,0.106599,0.0772797,0.137937
+isolation_forest,candidate,test,recall_at_threshold,0.56,0.442825,0.676067
+isolation_forest,candidate,test,total_cost,5393.34,3107.01,8450.59
+isolation_forest,candidate,test,savings_vs_flag_nothing_pct,30.2218,-15.8417,59.3064
+isolation_forest,candidate,test,savings_vs_flag_everything_pct,98.1063,97.0329,98.9091
+isolation_forest,candidate,test,tp,42,,
+isolation_forest,candidate,test,fp,352,,
+isolation_forest,candidate,test,fn,33,,
+isolation_forest,candidate,test,tn,56534,,
+hist_gradient_boosting (calibrated),served,validation,pr_auc,0.790151,,
+hist_gradient_boosting (calibrated),served,validation,threshold,0.303172,,
+hist_gradient_boosting (calibrated),served,test,pr_auc,0.787991,0.700231,0.869043
+hist_gradient_boosting (calibrated),served,test,recall_at_90pct_precision,0.733333,0.51388,0.825
+hist_gradient_boosting (calibrated),served,test,precision_at_80pct_recall,0.517241,0.121704,0.935534
+hist_gradient_boosting (calibrated),served,test,roc_auc,0.973934,0.940041,0.993616
+hist_gradient_boosting (calibrated),served,test,brier,0.000442385,0.000291537,0.000616591
+hist_gradient_boosting (calibrated),served,test,accuracy,0.999508,0.999315,0.999684
+hist_gradient_boosting (calibrated),served,test,precision_at_threshold,0.873016,0.785655,0.953846
+hist_gradient_boosting (calibrated),served,test,recall_at_threshold,0.733333,0.625,0.829306
+hist_gradient_boosting (calibrated),served,test,total_cost,3241.03,1088.42,6186.85
+hist_gradient_boosting (calibrated),served,test,savings_vs_flag_nothing_pct,58.068,26.2295,82.855
+hist_gradient_boosting (calibrated),served,test,savings_vs_flag_everything_pct,98.862,97.8277,99.6178
+hist_gradient_boosting (calibrated),served,test,tp,55,,
+hist_gradient_boosting (calibrated),served,test,fp,8,,
+hist_gradient_boosting (calibrated),served,test,fn,20,,
+hist_gradient_boosting (calibrated),served,test,tn,56878,,
+always_legit,baseline,test,accuracy,0.998683,,
+always_legit,baseline,test,recall_at_threshold,0,,
+always_legit,baseline,test,total_cost,7729.26,,
+flag_everything,baseline,test,total_cost,284805,,

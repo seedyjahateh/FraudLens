@@ -1,0 +1,29 @@
+{
+  "request_id": "example",
+  "fraud_probability": 0.9664948588714662,
+  "decision": "flag",
+  "threshold": 0.30317205699384453,
+  "model_version": "76274b69-635f5ce7",
+  "top_features": [
+    {
+      "feature": "V14",
+      "contribution": 0.8839934383910848
+    },
+    {
+      "feature": "V12",
+      "contribution": 0.2783846572643738
+    },
+    {
+      "feature": "V10",
+      "contribution": 0.1390921532299776
+    },
+    {
+      "feature": "V17",
+      "contribution": 0.06356327811077411
+    },
+    {
+      "feature": "V4",
+      "contribution": 0.059905805203010365
+    }
+  ]
+}

@@ -141,7 +141,39 @@ curl -s localhost:8000/score -H 'content-type: application/json' \
 ```
 
 <!-- EXAMPLE:START -->
-_No example response recorded yet. Run `python scripts/load_test.py`._
+Response captured from the running container by `scripts/load_test.py`:
+
+```json
+{
+  "request_id": "example",
+  "fraud_probability": 0.9664948588714662,
+  "decision": "flag",
+  "threshold": 0.30317205699384453,
+  "model_version": "76274b69-635f5ce7",
+  "top_features": [
+    {
+      "feature": "V14",
+      "contribution": 0.8839934383910848
+    },
+    {
+      "feature": "V12",
+      "contribution": 0.2783846572643738
+    },
+    {
+      "feature": "V10",
+      "contribution": 0.1390921532299776
+    },
+    {
+      "feature": "V17",
+      "contribution": 0.06356327811077411
+    },
+    {
+      "feature": "V4",
+      "contribution": 0.059905805203010365
+    }
+  ]
+}
+```
 <!-- EXAMPLE:END -->
 
 Validation is strict: a missing feature, a string where a number belongs, `NaN`, an unknown
@@ -152,7 +184,13 @@ decision and model version, and never feature values.
 ### Latency (NFR-2)
 
 <!-- LATENCY:START -->
-_No load test recorded yet. Run `python scripts/load_test.py`._
+1,000 sequential `POST /score` requests against http://localhost:8000 (Docker Desktop on Windows 11, 12th Gen Intel(R) Core(TM) i5-1245U, 16 GB RAM), measured client-side end to end:
+
+| p50 | p95 | p99 | max | errors |
+|---|---|---|---|---|
+| 15.7 ms | **21.2 ms** | 27.3 ms | 38.0 ms | 0 |
+
+Budget (NFR-2): p95 under 50 ms — **met**. Measured 2026-10-06.
 <!-- LATENCY:END -->
 
 ## 7. Limitations and next steps

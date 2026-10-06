@@ -1,0 +1,39 @@
+{
+  "version": "76274b69-635f5ce7",
+  "data_sha256": "76274b691b16a6c49d3f159c883398e03ccd6d1ee12d9d8ee38f4b4b98551a89",
+  "bootstrap_samples": 1000,
+  "confidence": 0.95,
+  "cost_summary": {
+    "threshold": 0.30317205699384453,
+    "model_cost": 3241.0299999999997,
+    "flag_nothing_cost": 7729.259999999999,
+    "flag_everything_cost": 284805.0,
+    "saved_vs_flag_nothing": [
+      4488.23,
+      58.06804273630334
+    ],
+    "saved_vs_flag_everything": [
+      281563.97,
+      98.86201787187724
+    ],
+    "outcome": {
+      "threshold": 0.30317205699384453,
+      "total_cost": 3241.0299999999997,
+      "tp": 55,
+      "fp": 8,
+      "fn": 20,
+      "tn": 56878
+    },
+    "validation_outcome": {
+      "threshold": 0.30317205699384453,
+      "total_cost": 4724.86,
+      "tp": 43,
+      "fp": 7,
+      "fn": 14,
+      "tn": 56894
+    },
+    "test_frauds": 75,
+    "test_rows": 56961,
+    "test_fraud_amount": 7729.26
+  }
+}
