@@ -22,6 +22,7 @@ from fraudlens.config import Config, load_config
 
 RESULTS = ("<!-- RESULTS:START -->", "<!-- RESULTS:END -->")
 LATENCY = ("<!-- LATENCY:START -->", "<!-- LATENCY:END -->")
+EXAMPLE = ("<!-- EXAMPLE:START -->", "<!-- EXAMPLE:END -->")
 
 
 def _num(x: float, digits: int = 3) -> str:
@@ -109,8 +110,8 @@ def decision_table(metrics: pd.DataFrame) -> str:
     return (
         f"Decision threshold **{threshold:.4g}** (chosen on validation to minimise cost).\n\n"
         "| | Flagged | Allowed |\n|---|---|---|\n"
-        f"| Fraud | {tp} (caught) | {fn} (missed) |\n"
-        f"| Legitimate | {fp} (false alarms) | {tn} |\n\n"
+        f"| Fraud | {tp:,} (caught) | {fn:,} (missed) |\n"
+        f"| Legitimate | {fp:,} (false alarms) | {tn:,} |\n\n"
         "| Policy on the test slice | Total cost | Saving by the model (95% CI) |\n"
         "|---|---|---|\n"
         f"| Flag nothing | {_money(nothing)} | "
@@ -133,10 +134,23 @@ def significance_text(comparisons: pd.DataFrame) -> str:
             f"- vs `{r['model_b']}`: PR-AUC difference {r['difference']:+.3f} "
             f"(95% CI {r['ci_low']:+.3f} to {r['ci_high']:+.3f}), {verdict}."
         )
-    return (
-        f"Paired bootstrap of the PR-AUC difference, `{comparisons.iloc[0]['model_a']}` "
-        "minus each other model, on the same resampled test rows:\n\n" + "\n".join(lines) + "\n"
+    served = comparisons.iloc[0]["model_a"]
+    text = (
+        f"Paired bootstrap of the PR-AUC difference, `{served}` minus each other model, on "
+        "the same resampled test rows:\n\n" + "\n".join(lines) + "\n"
     )
+    better = comparisons[comparisons["significant"] & (comparisons["ci_high"] < 0)]
+    if not better.empty:
+        names = ", ".join(f"`{n}`" for n in better["model_b"])
+        text += (
+            f"\n**The model chosen on validation is not the best on test:** {names} scored "
+            "significantly higher on the test slice. The served model is kept anyway: it was "
+            "selected by validation PR-AUC before the test slice was read, and switching now "
+            "would be choosing a model on test data, which would make the test numbers "
+            "optimistic. With so few validation frauds, model selection is itself noisy; this "
+            "is reported as a finding, not corrected.\n"
+        )
+    return text
 
 
 def accuracy_text(metrics: pd.DataFrame) -> str:
@@ -150,6 +164,19 @@ def accuracy_text(metrics: pd.DataFrame) -> str:
         f"model scores {100 * model_acc:.2f}% and catches {tp}. Accuracy separates them by "
         f"{100 * (model_acc - legit):.2f} percentage points, so it is reported only to make "
         "this point, never to compare models."
+    )
+
+
+def roc_text(metrics: pd.DataFrame) -> str:
+    """ROC-AUC caveat, illustrated with the model whose ROC-AUC most flatters its PR-AUC."""
+    test = metrics[(metrics["split"] == "test") & metrics["role"].isin(["served", "candidate"])]
+    pivot = test.pivot_table(index="model", columns="metric", values="value")
+    gap = str((pivot["roc_auc"] - pivot["pr_auc"]).idxmax())
+    return (
+        "ROC-AUC is reported for completeness only. With so few frauds, the false-positive "
+        "rate's denominator is huge, so ROC-AUC stays high even for a model that is of little "
+        f"use: `{gap}` reaches ROC-AUC {pivot.loc[gap, 'roc_auc']:.3f} but PR-AUC only "
+        f"{pivot.loc[gap, 'pr_auc']:.3f}."
     )
 
 
@@ -178,6 +205,17 @@ def latency_text(reports: Path) -> str:
     )
 
 
+def example_text(reports: Path) -> str:
+    path = reports / "example_response.json"
+    if not path.exists():
+        return "_No example response recorded yet. Run `python scripts/load_test.py`._\n"
+    body = json.loads(path.read_text(encoding="utf-8"))
+    return (
+        "Response captured from the running container by `scripts/load_test.py`:\n\n"
+        f"```json\n{json.dumps(body, indent=2)}\n```\n"
+    )
+
+
 def readme_results(reports: Path) -> str:
     metrics = pd.read_csv(reports / "metrics.csv")
     comparisons = pd.read_csv(reports / "comparisons.csv")
@@ -195,6 +233,8 @@ def readme_results(reports: Path) -> str:
         + decision_table(metrics)
         + "\n"
         + accuracy_text(metrics)
+        + "\n\n"
+        + roc_text(metrics)
         + "\n\n"
         + importance_text(importance)
         + "\n\n"
@@ -217,6 +257,8 @@ def update_readme(readme: Path, reports: Path) -> None:
     if (reports / "metrics.csv").exists():
         text = replace_section(text, RESULTS, readme_results(reports))
     text = replace_section(text, LATENCY, latency_text(reports))
+    if EXAMPLE[0] in text:
+        text = replace_section(text, EXAMPLE, example_text(reports))
     readme.write_text(text, encoding="utf-8", newline="\n")
 
 
@@ -271,7 +313,12 @@ def _full_metrics_table(metrics: pd.DataFrame) -> str:
     for _, r in test.iterrows():
         low, high = r["ci_low"], r["ci_high"]
         ci = "" if pd.isna(low) else f"{float(low):.4g} – {float(high):.4g}"
-        lines.append(f"| {r['model']} | {r['metric']} | {float(r['value']):.4g} | {ci} |")
+        value = (
+            f"{int(r['value']):,}"
+            if r["metric"] in {"tp", "fp", "fn", "tn"}
+            else f"{float(r['value']):.4g}"
+        )
+        lines.append(f"| {r['model']} | {r['metric']} | {value} | {ci} |")
     return "\n".join(lines) + "\n"
 
 
@@ -339,9 +386,7 @@ as probabilities.
 
 {results_table(ctx.metrics)}
 {significance_text(ctx.comparisons)}
-ROC-AUC is reported for completeness. With 0.17% positives, the false-positive rate's
-denominator is huge, so ROC-AUC sits close to 1 for every reasonable model and flatters
-them; PR-AUC does not.
+{roc_text(ctx.metrics)}
 
 {accuracy_text(ctx.metrics)}
 

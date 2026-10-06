@@ -1,0 +1,20 @@
+# docker compose up --build
+# Serves the model named in artifacts/LATEST (train first: `uv run python -m fraudlens`).
+services:
+  api:
+    build:
+      context: .
+      dockerfile: service/Dockerfile
+    image: fraudlens-api:0.1.0
+    ports:
+      - "8000:8000"
+    environment:
+      FRAUDLENS_ARTIFACTS: /artifacts
+    volumes:
+      - ./artifacts:/artifacts:ro
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    restart: unless-stopped

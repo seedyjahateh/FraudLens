@@ -19,7 +19,7 @@ import json
 import subprocess
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
 
 import joblib
 import numpy as np
@@ -49,7 +49,7 @@ class FraudModel:
     def score(self, row: pd.DataFrame, top_k: int = 5) -> tuple[float, list[Contribution]]:
         return explain_row(self.estimator, row, self.reference, top_k)
 
-    def decide(self, probability: float) -> str:
+    def decide(self, probability: float) -> Literal["flag", "allow"]:
         return "flag" if probability >= self.threshold else "allow"
 
 

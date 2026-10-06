@@ -138,6 +138,43 @@ def test_pr_metrics_known_values() -> None:
     assert m["precision_at_recall"] == pytest.approx(2 / 3)
 
 
+def test_significance_flags_a_better_unselected_model() -> None:
+    comparisons = pd.DataFrame(
+        [
+            {
+                "model_a": "gb (calibrated)",
+                "model_b": "rf",
+                "metric": "pr_auc",
+                "difference": -0.03,
+                "ci_low": -0.06,
+                "ci_high": -0.01,
+                "significant": True,
+            },
+            {
+                "model_a": "gb (calibrated)",
+                "model_b": "lr",
+                "metric": "pr_auc",
+                "difference": 0.01,
+                "ci_low": -0.02,
+                "ci_high": 0.04,
+                "significant": False,
+            },
+        ]
+    )
+    text = report.significance_text(comparisons)
+    assert "not the best on test" in text
+    assert "`rf`" in text.split("not the best on test")[1]
+    assert "`lr`" not in text.split("not the best on test")[1]
+    assert report.significance_text(comparisons.iloc[1:]).count("not the best") == 0
+    assert report.significance_text(comparisons.iloc[0:0]) == ""
+
+
+def test_example_section(tmp_path: Path) -> None:
+    assert "No example" in report.example_text(tmp_path)
+    (tmp_path / "example_response.json").write_text('{"decision": "flag"}', encoding="utf-8")
+    assert '"decision": "flag"' in report.example_text(tmp_path)
+
+
 def test_readme_markers_required(tmp_path: Path) -> None:
     with pytest.raises(ValueError, match="markers"):
         report.replace_section("no markers here", report.RESULTS, "x")
