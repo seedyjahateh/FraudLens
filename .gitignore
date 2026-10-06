@@ -23,3 +23,9 @@ data/raw/
 data/processed/
 artifacts/
 *.csv.gz
+
+# Dashboard
+dashboard/node_modules/
+dashboard/dist/
+dashboard/coverage/
+

@@ -37,6 +37,66 @@ jobs:
       - name: Tests with coverage (fail under 85%)
         run: uv run pytest --cov=fraudlens --cov=service --cov-report=term-missing
 
+  dashboard:
+    name: Dashboard (lint, types, tests, build)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: dashboard
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+          cache-dependency-path: dashboard/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm lint
+      - run: pnpm typecheck
+      - run: pnpm test
+      - run: pnpm build
+
+  docker-smoke:
+    name: Docker image serves the API and dashboard
+    needs: [check, dashboard]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: "3.12"
+          enable-cache: true
+      - run: uv sync --locked
+      - name: Train on the synthetic fixture
+        run: |
+          uv run python - <<'PY'
+          from pathlib import Path
+          from fraudlens.config import load_config
+          from fraudlens.evaluate import evaluate
+          from fraudlens.train import train
+          from tests.conftest import write_small_config
+          path = write_small_config(Path("smoke"))
+          cfg = load_config(path)
+          train(cfg, path.read_text(encoding="utf-8"))
+          evaluate(cfg)
+          PY
+      - run: docker build -f service/Dockerfile -t fraudlens-api .
+      - name: Run and probe
+        run: |
+          docker run -d --name api -p 8000:8000 -v "$PWD/smoke/artifacts:/artifacts:ro" --read-only --tmpfs /tmp fraudlens-api
+          for i in $(seq 1 30); do curl -fsS localhost:8000/health && break; sleep 2; done
+          curl -fsS localhost:8000/dashboard/ | grep -q "<title>FraudLens</title>"
+          curl -fsS localhost:8000/dashboard/threshold | grep -q 'id="root"'
+          curl -fsS localhost:8000/api/dashboard | python3 -c "import json,sys; assert json.load(sys.stdin)['schema_version'] == 1"
+          curl -fsS -X POST localhost:8000/score -H 'content-type: application/json' \
+            -d @service/presets/example_transaction.json | python3 -c "import json,sys; assert json.load(sys.stdin)['decision'] in ('flag','allow')"
+          test "$(docker exec api id -u)" = "10001"
+      - if: failure()
+        run: docker logs api
+
   full-evaluation:
     name: Full evaluation on the real dataset
     if: github.event_name == 'workflow_dispatch' && inputs.full_evaluation

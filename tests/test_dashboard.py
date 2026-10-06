@@ -143,6 +143,31 @@ def test_sweep_costs_match_cost_at_threshold(tmp_path: Path) -> None:
     assert len(payload["tp"]) <= 650
 
 
+def test_frontend_fixture_bundle_matches_schema() -> None:
+    """The dashboard tests use a committed bundle; it must follow the current schema.
+    Regenerate with `python scripts/export_fixture_bundle.py` after changing the bundle."""
+    path = (
+        Path(__file__).resolve().parents[1] / "dashboard" / "src" / "test" / "fixture-bundle.json"
+    )
+    fixture = json.loads(path.read_text(encoding="utf-8"))
+    assert fixture["schema_version"] == SCHEMA_VERSION
+    assert set(fixture) == TOP_LEVEL
+    assert set(fixture["sweeps"]["test"]) == {
+        "threshold",
+        "tp",
+        "fp",
+        "fn",
+        "tn",
+        "missed_cost",
+        "chosen_index",
+        "min_cost_index",
+        "chosen_threshold",
+        "rows",
+        "frauds",
+        "fraud_amount",
+    }
+
+
 def test_pr_curve_is_exact_at_corners() -> None:
     y = np.array([1, 0, 0, 1, 0, 0, 0, 1])
     s = np.array([0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2])
