@@ -1,0 +1,65 @@
+[project]
+name = "fraudlens"
+version = "0.1.0"
+description = "Honest fraud detection on an imbalanced card-transaction dataset, with a cost-chosen threshold and a tested scoring API."
+readme = "README.md"
+requires-python = "==3.12.*"
+dependencies = [
+    "fastapi==0.142.2",
+    "httpx==0.28.1",
+    "imbalanced-learn==0.14.2",
+    "joblib==1.6.0",
+    "matplotlib==3.11.2",
+    "numpy==2.5.3",
+    "pandas==3.0.6",
+    "pydantic==2.13.5",
+    "pyyaml==6.0.3",
+    "scikit-learn==1.9.1",
+    "uvicorn[standard]==0.54.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["fraudlens", "service"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "SIM", "N", "RUF"]
+ignore = ["N803", "N806"]  # X / X_train are conventional ML names
+
+[tool.mypy]
+python_version = "3.12"
+disallow_untyped_defs = true
+warn_unused_ignores = true
+warn_return_any = true
+no_implicit_optional = true
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+
+[tool.coverage.run]
+source = ["fraudlens", "service"]
+omit = ["fraudlens/__main__.py"]
+
+[tool.coverage.report]
+fail_under = 85
+show_missing = true
+skip_covered = true
+
+[dependency-groups]
+dev = [
+    "mypy==2.4.0",
+    "pandas-stubs==3.0.5.260914",
+    "pytest==9.1.1",
+    "pytest-cov==7.1.0",
+    "ruff==0.16.10",
+    "types-pyyaml==6.0.12.20260906",
+]
