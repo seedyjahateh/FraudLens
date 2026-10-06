@@ -31,7 +31,8 @@ target-version = "py312"
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "B", "UP", "SIM", "N", "RUF"]
-ignore = ["N803", "N806"]  # X / X_train are conventional ML names
+# N803/N806: X / X_train are conventional ML names. RUF001-3: report prose uses en dashes.
+ignore = ["N803", "N806", "RUF001", "RUF002", "RUF003"]
 
 [tool.mypy]
 python_version = "3.12"

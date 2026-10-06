@@ -25,6 +25,7 @@ def fixture_split(fixture_df: pd.DataFrame) -> Split:
 
 def write_small_config(tmp: Path) -> Path:
     """The repo config with tiny budgets and paths redirected into ``tmp``."""
+    tmp.mkdir(parents=True, exist_ok=True)
     raw = yaml.safe_load((REPO_ROOT / "config.yaml").read_text(encoding="utf-8"))
     raw["data"]["path"] = str(FIXTURE_PATH)
     raw["data"]["split_index_path"] = str(tmp / "processed" / "split_indices.json")
